@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ship</title>
+</head>
+<body>
+    <p id="score_text">SCORE :</p>
+    <p id="score"></p>
+    <table id="field" border="2px"></table>
+
+    <script>
+        var pressedKeys = {};
+        var t = document.getElementById("field");
+        var pineapples = [];
+        var x = 0;
+        var temp_x;
+        var count = 0;
+        var count_p = 2;
+        var level = 33;
+        const max_x = 5;
+        const max_y = 6;
+        var left = false;
+        var right = false;
+        var score = 0;
+        var score_e = document.getElementById("score");
+
+        var tb = t.getElementsByTagName("tbody")[0];
+        for(let j = 0; j < max_y; j++){
+            let row = t.insertRow(j);
+            for(let i = 0; i < max_x; i++){
+                let cell = row.insertCell(i);
+
+                cell.style.width = "100px";
+                cell.style.height = "100px";
+                if(j == max_y - 1){
+                    cell.style.backgroundColor = "blue";
+                }
+                else{
+                    if(Math.random() * 10 > 7 && j < max_y - 3)
+                        cell.style.backgroundColor = "white";
+                    else
+                        cell.style.backgroundColor = "cyan";
+                }
+            }
+        }
+
+        window.onkeyup = function(e) { pressedKeys[e.keyCode] = false; }
+        window.onkeydown = function(e) { pressedKeys[e.keyCode] = true; }
+
+        var ship = document.createElement("img");
+        ship.src = "img/ship.png";
+        t.rows[max_y - 1].cells[x].append(ship);
+
+        var pineapple = document.createElement("img");
+        pineapple.src = "img/pineapple.png";
+
+        score_e.innerHTML = score;
+
+        function frame () {
+            temp_x = x;
+
+            count++;
+            if(count >= level){
+                let p_x = Math.floor(Math.random() * max_x);
+                for(let p = 0; p < pineapples.length; p++){
+                    pineapples[p][2]++;
+                    let ship_test = pineapples[p][2] == max_y - 1 && pineapples[p][1] == x;
+                    if(pineapples[p][2] == max_y || ship_test){
+                        let temp_p = [];
+                        pineapples[p][0].remove();
+                        for(let i = 0; i < pineapples.length; i++){
+                            if(i != p){
+                                temp_p.push(pineapples[i]);
+                            }
+                        }
+                        pineapples = temp_p;
+                        if(ship_test){
+                            score += 10;
+                            score_e.innerHTML = score;
+                            count_p++;
+                        }
+                        else{
+                            score -= 10;
+                            score_e.innerHTML = score;
+                        }
+                        p--;
+                    }
+                    else{
+                        t.rows[pineapples[p][2]].cells[pineapples[p][1]].append(pineapples[p][0]);
+                    }
+                }
+                pineapples.push([pineapple.cloneNode(true), p_x, 0]);
+                t.rows[0].cells[p_x].append(pineapples[pineapples.length - 1][0]);
+                count = 0;
+            }
+
+            if(pressedKeys[37]){
+                if(!left){
+                    if(x > 0){
+                        x--;
+                    }
+                    left = true;
+                }
+            }
+            else{
+                left = false;
+            }
+            
+            if(pressedKeys[39]){
+                if(!right){
+                    if(x < max_x - 1){
+                        x++;
+                    }
+                    right = true;
+                }
+            }
+            else{
+                right = false;
+            }
+
+            if(x != temp_x){
+                //console.log(count_p, level, count);
+                t.rows[max_y - 1].cells[x].append(ship);
+                for(let p = 0; p < pineapples.length; p++){
+                    if(pineapples[p][2] == max_y - 1){
+                        if(pineapples[p][1] == x){
+                            let temp_p = [];
+                            pineapples[p][0].remove();
+                            for(let i = 0; i < pineapples.length; i++){
+                                if(i != p){
+                                    temp_p.push(pineapples[i]);
+                                }
+                            }
+                            pineapples = temp_p;
+                            score += 15;
+                            count_p++;
+                            score_e.innerHTML = score;
+                            p--;
+                        }
+                    }
+                }
+            }
+
+            if(count_p >= 3){
+                if(level > 5){
+                    level -= 4;
+                }
+                else if(level > 2){
+                    level -= 1;
+                }
+                count_p = 0;
+            }
+
+            if(score >= 0){
+                setTimeout(frame, 50);
+            }
+            else{
+                document.getElementById("score_text").innerHTML = "GAME OVER";
+            }
+        }
+
+        frame();
+    </script>
+</body>
+</html>
